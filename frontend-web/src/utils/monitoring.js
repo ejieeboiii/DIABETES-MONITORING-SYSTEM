@@ -1,0 +1,142 @@
+export const LEVEL_LABELS = {
+  Normal: 'Normal monitoring band',
+  'Pre-Diabetic': 'Elevated monitoring band',
+  Diabetic: 'High monitoring band',
+};
+
+export const levelColor = {
+  Normal: 'text-emerald-400',
+  'Pre-Diabetic': 'text-yellow-400',
+  Diabetic: 'text-red-400',
+};
+
+export const levelBg = {
+  Normal: 'bg-emerald-500/10 border-emerald-500/20',
+  'Pre-Diabetic': 'bg-yellow-500/10 border-yellow-500/20',
+  Diabetic: 'bg-red-500/10 border-red-500/20',
+};
+
+export function filterByDays(readings, days) {
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return readings.filter((r) => new Date(r.taken_at).getTime() >= cutoff);
+}
+
+export function computeTrend(readings) {
+  if (!readings || readings.length < 2) return { label: 'Insufficient data', direction: 'stable', delta: 0 };
+
+  const sorted = [...readings].sort((a, b) => new Date(a.taken_at) - new Date(b.taken_at));
+  const recent = sorted.slice(-Math.min(7, sorted.length));
+  const firstHalf = recent.slice(0, Math.ceil(recent.length / 2));
+  const secondHalf = recent.slice(Math.ceil(recent.length / 2));
+
+  const avg = (arr) => arr.reduce((s, r) => s + r.acetone_ppm, 0) / arr.length;
+  const delta = avg(secondHalf) - avg(firstHalf);
+
+  if (delta > 0.15) return { label: 'Rising trend', direction: 'up', delta: delta.toFixed(2) };
+  if (delta < -0.15) return { label: 'Improving trend', direction: 'down', delta: delta.toFixed(2) };
+  return { label: 'Stable trend', direction: 'stable', delta: delta.toFixed(2) };
+}
+
+export function computeSevenDayAvg(readings) {
+  const week = filterByDays(readings, 7);
+  if (!week.length) return null;
+  return (week.reduce((s, r) => s + r.acetone_ppm, 0) / week.length).toFixed(2);
+}
+
+export function toChartData(readings, limit = 30) {
+  return [...readings]
+    .sort((a, b) => new Date(a.taken_at) - new Date(b.taken_at))
+    .slice(-limit)
+    .map((r) => ({
+      date: new Date(r.taken_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      ppm: r.acetone_ppm,
+      level: r.diabetes_level,
+    }));
+}
+
+export function getWellnessTips(latestLevel, trendDirection) {
+  const base = {
+    Normal: [
+      { title: 'Stay consistent', text: 'Keep balanced meals, regular activity, and periodic breath monitoring.' },
+      { title: 'Hydration', text: 'Drink water throughout the day to support metabolic wellness.' },
+    ],
+    'Pre-Diabetic': [
+      { title: 'Lifestyle focus', text: 'Reduce refined sugars and increase light daily activity such as walking.' },
+      { title: 'Follow-up', text: 'Consider discussing your monitoring trend with your healthcare provider.' },
+    ],
+    Diabetic: [
+      { title: 'Monitor closely', text: 'Track readings regularly and note any sudden changes in your wellness routine.' },
+      { title: 'Seek guidance', text: 'Contact your healthcare provider if elevated readings persist. This app does not diagnose.' },
+    ],
+  };
+
+  const tips = [...(base[latestLevel] || base.Normal)];
+
+  if (trendDirection === 'up') {
+    tips.unshift({
+      title: 'Trend notice',
+      text: 'Your recent readings are trending upward. Review sleep, diet, and stress, then share results with your provider.',
+    });
+  } else if (trendDirection === 'down') {
+    tips.unshift({
+      title: 'Positive progress',
+      text: 'Your recent readings show improvement. Continue your current healthy habits.',
+    });
+  }
+
+  return tips.slice(0, 3);
+}
+
+export function getProviderAlerts(patients, readings) {
+  const alerts = [];
+  const now = Date.now();
+
+  patients.forEach((patient) => {
+    const patientReadings = readings
+      .filter((r) => r.patient_id === patient.id)
+      .sort((a, b) => new Date(b.taken_at) - new Date(a.taken_at));
+
+    if (!patientReadings.length) {
+      alerts.push({
+        patientId: patient.id,
+        patientName: patient.full_name,
+        type: 'no_data',
+        message: 'No readings recorded yet',
+      });
+      return;
+    }
+
+    const latest = patientReadings[0];
+    const daysSince = (now - new Date(latest.taken_at).getTime()) / (1000 * 60 * 60 * 24);
+
+    if (daysSince >= 7) {
+      alerts.push({
+        patientId: patient.id,
+        patientName: patient.full_name,
+        type: 'missed',
+        message: `No reading in ${Math.floor(daysSince)} days`,
+      });
+    }
+
+    const trend = computeTrend(patientReadings);
+    if (trend.direction === 'up') {
+      alerts.push({
+        patientId: patient.id,
+        patientName: patient.full_name,
+        type: 'rising',
+        message: 'Readings trending upward over the last week',
+      });
+    }
+
+    if (latest.diabetes_level !== 'Normal') {
+      alerts.push({
+        patientId: patient.id,
+        patientName: patient.full_name,
+        type: 'band',
+        message: `Latest band: ${LEVEL_LABELS[latest.diabetes_level] || latest.diabetes_level}`,
+      });
+    }
+  });
+
+  return alerts.slice(0, 8);
+}

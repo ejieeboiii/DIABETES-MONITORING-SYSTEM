@@ -1,0 +1,113 @@
+import secrets
+import string
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from database import get_db
+from auth import get_current_medical, get_current_patient, hash_password
+import models, schemas
+
+router = APIRouter()
+
+# ─── ADD PATIENT (Medical only) ───────────────────────────────────────────────
+@router.post("/", response_model=schemas.PatientResponse)
+def add_patient(
+    data: schemas.PatientCreate,
+    db: Session = Depends(get_db),
+    current=Depends(get_current_medical)
+):
+    if db.query(models.Patient).filter(models.Patient.email == data.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered.")
+    patient = models.Patient(
+        full_name=data.full_name,
+        email=data.email,
+        hashed_password=hash_password(data.password),
+        age=data.age,
+        gender=data.gender,
+        contact=data.contact,
+        is_diabetic=data.is_diabetic,
+        medical_personnel_id=current.id
+    )
+    db.add(patient)
+    db.commit()
+    db.refresh(patient)
+    return patient
+
+# ─── GET ALL PATIENTS (Medical only) ─────────────────────────────────────────
+@router.get("/", response_model=List[schemas.PatientResponse])
+def get_patients(db: Session = Depends(get_db), current=Depends(get_current_medical)):
+    return db.query(models.Patient).filter(
+        models.Patient.medical_personnel_id == current.id
+    ).all()
+
+# ─── GET SINGLE PATIENT ───────────────────────────────────────────────────────
+@router.get("/{patient_id}", response_model=schemas.PatientResponse)
+def get_patient(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current=Depends(get_current_medical)
+):
+    patient = db.query(models.Patient).filter(
+        models.Patient.id == patient_id,
+        models.Patient.medical_personnel_id == current.id
+    ).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+    return patient
+
+def _generate_temp_password(length: int = 10) -> str:
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+# ─── RESET PATIENT PASSWORD (Medical only) ─────────────────────────────────────
+@router.post("/{patient_id}/reset-password", response_model=schemas.PatientCredentialsOnce)
+def reset_patient_password(
+    patient_id: int,
+    data: schemas.PatientResetPassword = schemas.PatientResetPassword(),
+    db: Session = Depends(get_db),
+    current=Depends(get_current_medical),
+):
+    patient = db.query(models.Patient).filter(
+        models.Patient.id == patient_id,
+        models.Patient.medical_personnel_id == current.id,
+    ).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    raw = (data.new_password or "").strip()
+    new_password = raw if raw else _generate_temp_password()
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+    patient.hashed_password = hash_password(new_password)
+    db.commit()
+
+    return schemas.PatientCredentialsOnce(
+        email=patient.email,
+        temporary_password=new_password,
+        message="Share these credentials securely with the patient. They will not be shown again.",
+    )
+
+
+# ─── DELETE PATIENT ───────────────────────────────────────────────────────────
+@router.delete("/{patient_id}")
+def delete_patient(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current=Depends(get_current_medical)
+):
+    patient = db.query(models.Patient).filter(
+        models.Patient.id == patient_id,
+        models.Patient.medical_personnel_id == current.id
+    ).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+    db.delete(patient)
+    db.commit()
+    return {"message": f"Patient '{patient.full_name}' deleted successfully."}
+
+# ─── GET OWN PROFILE (Patient only) ──────────────────────────────────────────
+@router.get("/me/profile", response_model=schemas.PatientResponse)
+def get_my_profile(current=Depends(get_current_patient)):
+    return current

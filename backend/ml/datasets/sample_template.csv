@@ -1,0 +1,4 @@
+blood_glucose_mg_dl,acetone_ppm,temperature,humidity,raw_sensor_value,patient_id,fasting,notes
+95,1.2,27.5,58.0,980,1,1,Example row - replace with real paired measurements
+142,2.4,28.0,62.0,1150,2,0,Example row - glucose from glucometer same session as breath scan
+180,3.8,29.1,55.0,1380,3,1,Example row - delete examples before training
