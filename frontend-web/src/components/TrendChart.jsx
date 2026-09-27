@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function TrendChart({ data, height = 220 }) {
   if (!data?.length) {
     return (
-      <div className="py-12 text-center text-white/20 text-sm">
+      <div className="py-12 text-center text-sm text-slate-400">
         Not enough readings to display a trend chart yet.
       </div>
     );
@@ -12,15 +12,15 @@ export default function TrendChart({ data, height = 220 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-        <XAxis dataKey="date" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} />
-        <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} />
+        <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
         <Tooltip
           contentStyle={{
-            background: '#1e293b',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
             borderRadius: '12px',
-            color: 'white',
+            color: '#0f172a',
           }}
         />
         <ReferenceLine y={1.8} stroke="rgba(234,179,8,0.35)" strokeDasharray="4 4" />

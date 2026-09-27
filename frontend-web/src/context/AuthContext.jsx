@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginProvider, registerProvider, loginPatient, getProviderMe, getPatientMe } from '../utils/api';
+import { loginProvider, registerProvider, getProviderMe } from '../utils/api';
 
 const AuthContext = createContext();
 
@@ -12,9 +12,14 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
     if (token && savedRole) {
-      const fetchMe = savedRole === 'medical' ? getProviderMe : getPatientMe;
-      fetchMe()
-        .then((res) => { setUser(res.data); setRole(savedRole); })
+      if (savedRole !== 'medical') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        setLoading(false);
+        return;
+      }
+      getProviderMe()
+        .then((res) => { setUser(res.data); setRole('medical'); })
         .catch(() => {
           localStorage.removeItem('token');
           localStorage.removeItem('role');
@@ -43,25 +48,6 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
-  const loginPatient = async (email, password) => {
-    const res = await patientLogin({ email, password });
-    localStorage.setItem('token', res.data.access_token);
-    localStorage.setItem('role', 'patient');
-    setUser(res.data.user);
-    setRole('patient');
-    return res.data;
-  };
-
-  const login = async (email, password, role = 'patient') => {
-    if (role === 'medical') return loginMedical(email, password);
-    return loginPatient(email, password);
-  };
-
-  const register = async (full_name, email, password, role = 'patient', profession = 'Doctor') => {
-    if (role === 'medical') return registerMedical(full_name, email, password, profession);
-    throw new Error('Patient registration is not supported in this app. Please contact your provider.');
-  };
-
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -70,7 +56,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, login, register, loginMedical, registerMedical, loginPatient, logout, loading }}>
+    <AuthContext.Provider value={{ user, role, loginMedical, registerMedical, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

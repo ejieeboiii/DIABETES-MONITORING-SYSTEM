@@ -15,47 +15,48 @@ export default function MyResults() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-slate-950">
-        <div className="text-white/30 text-sm">Loading...</div>
+      <div className="flex-1 flex items-center justify-center bg-slate-100">
+        <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500 shadow-sm">Loading results...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 bg-slate-950 overflow-auto">
-      <div className="p-8 max-w-6xl mx-auto space-y-6">
+    <div className="min-h-full flex-1 overflow-auto bg-slate-100 text-slate-800">
+      <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6 lg:p-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Results</h1>
-          <p className="text-white/30 text-sm mt-1">{readings.length} recorded scans</p>
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-600">Monitoring records</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">My Results</h1>
+          <p className="mt-1 text-sm text-slate-500">{readings.length} recorded scans</p>
         </div>
 
-        <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm shadow-slate-200/50">
           {readings.length === 0 ? (
-            <div className="py-20 text-center text-white/20 text-sm">
+            <div className="py-20 text-center text-sm text-slate-500">
               No results yet. Your healthcare provider will add readings after a scan.
             </div>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-slate-200 bg-slate-50/80">
                   {['Acetone PPM', 'Est. Glucose', 'Temperature', 'Humidity', 'Monitoring band', 'Suggestion', 'Date'].map((h) => (
-                    <th key={h} className="text-left px-6 py-3 text-white/30 text-xs font-medium uppercase tracking-wider">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:px-6">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {readings.map((r) => (
-                  <tr key={r.id} className="border-b border-white/3 hover:bg-white/2">
-                    <td className="px-6 py-3 text-white font-mono text-sm">{r.acetone_ppm}</td>
-                    <td className="px-6 py-3 text-emerald-400 text-sm font-medium">
+                  <tr key={r.id} className="border-b border-slate-200 last:border-b-0 hover:bg-slate-50/70">
+                    <td className="px-5 py-3 font-mono text-sm text-slate-800 sm:px-6">{r.acetone_ppm}</td>
+                    <td className="px-5 py-3 text-sm font-semibold text-slate-800 sm:px-6">
                       {r.estimated_glucose_mg_dl ? `${r.estimated_glucose_mg_dl} mg/dL` : '—'}
-                      {r.glucose_level && <span className="text-white/50 text-xs ml-1">({r.glucose_level})</span>}
+                      {r.glucose_level && <span className="ml-1 text-xs font-medium text-slate-400">({r.glucose_level})</span>}
                     </td>
-                    <td className="px-6 py-3 text-white/60 text-sm">{r.temperature}°C</td>
-                    <td className="px-6 py-3 text-white/60 text-sm">{r.humidity}%</td>
-                    <td className="px-6 py-3"><LevelBadge level={r.diabetes_level} /></td>
-                    <td className="px-6 py-3 text-white/50 text-xs max-w-xs">{r.suggestion || '—'}</td>
-                    <td className="px-6 py-3 text-white/30 text-xs">{new Date(r.taken_at).toLocaleString()}</td>
+                    <td className="px-5 py-3 text-sm text-slate-600 sm:px-6">{r.temperature}°C</td>
+                    <td className="px-5 py-3 text-sm text-slate-600 sm:px-6">{r.humidity}%</td>
+                    <td className="px-5 py-3 sm:px-6"><LevelBadge level={r.diabetes_level} /></td>
+                    <td className="max-w-xs px-5 py-3 text-xs text-slate-500 sm:px-6">{r.suggestion || '—'}</td>
+                    <td className="px-5 py-3 text-xs text-slate-500 sm:px-6">{new Date(r.taken_at).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>

@@ -131,7 +131,7 @@ export default function LiveScan() {
         return;
       }
 
-      if (latest.id !== latestSeenReadingId.current) {
+       if (latest.id !== latestSeenReadingId.current) {
         latestSeenReadingId.current = latest.id;
         const mapped = mapReadingToResult(latest, 'ESP32 upload (same data as Serial Monitor)');
         setResult(mapped);
@@ -269,22 +269,23 @@ export default function LiveScan() {
   const cfg = result ? levelConfig[result.diabetes_level] : null;
 
   return (
-    <div className="flex-1 bg-slate-950 overflow-auto">
-      <div className="p-8 max-w-2xl mx-auto">
-        <div className="mb-8">
+    <div className="min-h-full flex-1 overflow-auto bg-slate-100 text-slate-800">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Live Scan</h1>
-            <p className="text-white/30 text-sm mt-1">Real MQ-138 breath scan — exhale on sensor after Start Listening</p>
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-600">Monitoring workspace</p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Live Scan</h1>
+            <p className="mt-1 text-sm text-slate-500">Real MQ-138 breath scan — exhale on sensor after Start Listening</p>
           </div>
         </div>
 
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-2 mb-6">
+        <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-200/50">
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setMode('manual')}
               className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-                mode === 'manual' ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/50 hover:text-white'
+                mode === 'manual' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
               }`}
             >
               Manual Entry
@@ -293,7 +294,7 @@ export default function LiveScan() {
               type="button"
               onClick={() => setMode('listener')}
               className={`rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
-                mode === 'listener' ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/50 hover:text-white'
+                mode === 'listener' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
               }`}
             >
               ESP32 Listener
@@ -301,19 +302,19 @@ export default function LiveScan() {
           </div>
         </div>
 
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-6 mb-6">
+        <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 sm:p-6">
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-white/40 uppercase tracking-wider">Select Patient</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Select Patient</label>
               <select name="patient_id" value={form.patient_id} onChange={handle} required
-                className="mt-1 w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400/50 text-sm">
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                 <option value="">-- Select a patient --</option>
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>{p.full_name}</option>
                 ))}
               </select>
               {form.patient_id && mode === 'listener' && (
-                <div className="text-emerald-300/90 text-xs mt-2 space-y-1 leading-relaxed">
+                <div className="mt-2 space-y-1 text-xs leading-relaxed text-slate-500">
                   <p>1. Click <strong>Start Listening</strong> (patient set here).</p>
                   <p>2. On ESP32: wait 3 min warmup, then press button or type <span className="font-mono">s</span>.</p>
                   <p>3. When prompted, <strong>exhale steadily</strong> 6–8 s with lips 2–3 cm from the MQ-138.</p>
@@ -322,45 +323,45 @@ export default function LiveScan() {
             </div>
             {mode === 'manual' ? (
               <form onSubmit={scan} className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   {[
                     { name: 'raw_sensor_value', label: 'Raw ADC Value', placeholder: 'e.g. 1200', hint: '0 – 4095' },
                     { name: 'temperature', label: 'Temperature (°C)', placeholder: 'e.g. 28.5', hint: '' },
                     { name: 'humidity', label: 'Humidity (%)', placeholder: 'e.g. 65.0', hint: '' },
                   ].map(f => (
                     <div key={f.name}>
-                      <label className="text-xs text-white/40 uppercase tracking-wider">{f.label}</label>
+                      <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{f.label}</label>
                       <input name={f.name} type="number" step="any" placeholder={f.placeholder} value={form[f.name]} onChange={handle} required
-                        className="mt-1 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50 text-sm" />
-                      {f.hint && <p className="text-white/20 text-xs mt-1">{f.hint}</p>}
+                        className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />
+                      {f.hint && <p className="mt-1 text-xs text-slate-400">{f.hint}</p>}
                     </div>
                   ))}
                 </div>
                 <button type="submit" disabled={scanning}
-                  className="w-full bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 py-3 font-semibold text-white shadow-lg shadow-sky-600/20 transition-all hover:bg-sky-500 disabled:opacity-50">
                   {scanning ? (
                     <><svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Analyzing...</>
-                  ) : '⚡ Run Manual Scan'}
+                  ) : 'Run Manual Scan'}
                 </button>
               </form>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-xl border border-white/10 bg-white/3 px-4 py-3">
-                  <p className="text-white/70 text-xs uppercase tracking-wider">ESP32 Upload Endpoint</p>
-                  <p className="text-white text-sm font-mono mt-1">POST {API_BASE_URL}/readings/sensor</p>
-                  <p className="text-emerald-300/80 text-xs mt-2">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">ESP32 Upload Endpoint</p>
+                  <p className="mt-1 font-mono text-sm text-slate-800">POST {API_BASE_URL}/readings/sensor</p>
+                  <p className="mt-2 text-xs text-slate-500">
                     ESP32 uses <span className="font-mono">API_HOST</span> (your PC IP, e.g. http://10.0.0.51:8000). Patient comes from Start Listening.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-white/10 bg-white/3 px-4 py-3">
-                  <p className="text-white/70 text-xs uppercase tracking-wider">Listener Status</p>
-                  <p className={`mt-1 text-sm ${listenerStatus === 'error' ? 'text-red-400' : listenerStatus === 'fallback' ? 'text-yellow-300' : 'text-emerald-300'}`}>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Listener Status</p>
+                  <p className={`mt-1 text-sm ${listenerStatus === 'error' ? 'text-rose-600' : listenerStatus === 'fallback' ? 'text-amber-600' : 'text-emerald-600'}`}>
                     {listenerMessage}
                   </p>
-                  <div className="mt-2 inline-flex items-center gap-2 rounded-lg bg-black/20 px-2.5 py-1">
-                    <span className={`h-2 w-2 rounded-full ${socketConnected ? 'bg-emerald-400' : 'bg-yellow-400'}`} />
-                    <span className="text-xs text-white/50">{socketConnected ? 'WebSocket connected' : 'Polling fallback'}</span>
+                  <div className="mt-2 inline-flex items-center gap-2 rounded-lg bg-white px-2.5 py-1 ring-1 ring-slate-200">
+                    <span className={`h-2 w-2 rounded-full ${socketConnected ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                    <span className="text-xs text-slate-500">{socketConnected ? 'WebSocket connected' : 'Polling fallback'}</span>
                   </div>
                 </div>
 
@@ -369,7 +370,7 @@ export default function LiveScan() {
                     <button
                       type="button"
                       onClick={startListening}
-                      className="bg-blue-500 hover:bg-blue-400 text-white font-semibold py-3 rounded-xl transition-all"
+                      className="rounded-xl bg-sky-600 py-3 font-semibold text-white shadow-lg shadow-sky-600/20 transition-all hover:bg-sky-500"
                     >
                       Start Listening
                     </button>
@@ -377,7 +378,7 @@ export default function LiveScan() {
                     <button
                       type="button"
                       onClick={stopListening}
-                      className="bg-white/10 hover:bg-white/20 text-white font-semibold py-3 rounded-xl transition-all"
+                      className="rounded-xl bg-slate-900 py-3 font-semibold text-white transition-all hover:bg-slate-800"
                     >
                       Stop Listening
                     </button>
@@ -386,66 +387,66 @@ export default function LiveScan() {
               </div>
             )}
             {!backendReady && mode === 'listener' && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 text-amber-200 text-sm">
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                 Backend is missing the listener API. Restart uvicorn from the project <span className="font-mono">backend</span> folder, then refresh this page.
               </div>
             )}
-            {error && <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">{error}</div>}
+            {error && <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
           </div>
         </div>
 
         {result && cfg && (
-          <div className={`${cfg.bg} border ${cfg.border} rounded-2xl p-6 ring-4 ${cfg.ring} mb-6`}>
-            <div className="flex items-start justify-between mb-4">
+          <div className={`mb-6 rounded-3xl border ${result.diabetes_level === 'Normal' ? 'border-emerald-200 bg-emerald-50' : result.diabetes_level === 'Pre-Diabetic' ? 'border-amber-200 bg-amber-50' : 'border-rose-200 bg-rose-50'} p-5 shadow-sm sm:p-6`}>
+            <div className="mb-4 flex items-start justify-between">
               <div>
-                <p className="text-white/50 text-xs uppercase tracking-wider">Patient</p>
-                <p className="text-white font-semibold mt-0.5">{result.patient_name}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Patient</p>
+                <p className="mt-1 font-semibold text-slate-900">{result.patient_name}</p>
               </div>
-              <div className={`w-12 h-12 rounded-xl ${cfg.bg} border ${cfg.border} flex items-center justify-center text-2xl ${cfg.color} font-bold`}>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border bg-white text-2xl font-bold shadow-sm ${result.diabetes_level === 'Normal' ? 'border-emerald-200 text-emerald-600' : result.diabetes_level === 'Pre-Diabetic' ? 'border-amber-200 text-amber-600' : 'border-rose-200 text-rose-600'}`}>
                 {cfg.icon}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 { label: 'Acetone PPM', value: result.acetone_ppm },
                 { label: 'Temperature', value: `${result.reading.temperature}°C` },
                 { label: 'Humidity', value: `${result.reading.humidity}%` },
               ].map(s => (
-                <div key={s.label} className="bg-black/20 rounded-xl p-3 text-center">
-                  <p className="text-white/30 text-xs">{s.label}</p>
-                  <p className="text-white font-bold text-lg mt-1">{s.value}</p>
+                <div key={s.label} className="rounded-2xl border border-slate-200 bg-white p-3 text-center shadow-sm">
+                  <p className="text-xs text-slate-500">{s.label}</p>
+                  <p className="mt-1 text-lg font-bold text-slate-900">{s.value}</p>
                 </div>
               ))}
             </div>
             {result.predicted_bgl && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mb-4">
-                <p className="text-blue-300 text-xs uppercase tracking-wider">Predicted Blood Glucose</p>
-                <p className="text-white font-bold text-2xl mt-1">{result.predicted_bgl.toFixed(1)} mg/dL</p>
+              <div className="mb-4 rounded-2xl border border-sky-200 bg-sky-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-700">Predicted Blood Glucose</p>
+                <p className="mt-1 text-2xl font-bold text-slate-900">{result.predicted_bgl.toFixed(1)} mg/dL</p>
               </div>
             )}
-            <div className={`rounded-xl p-4 ${cfg.bg} border ${cfg.border}`}>
-              <p className={`font-bold text-lg ${cfg.color}`}>{result.diabetes_level}</p>
-              <p className="text-white/60 text-sm mt-1">{result.suggestion}</p>
-              {result.source && <p className="text-white/40 text-xs mt-3">{result.source}</p>}
+            <div className="rounded-2xl border border-white/80 bg-white/70 p-4">
+              <p className={`text-lg font-bold ${result.diabetes_level === 'Normal' ? 'text-emerald-700' : result.diabetes_level === 'Pre-Diabetic' ? 'text-amber-700' : 'text-rose-700'}`}>{result.diabetes_level}</p>
+              <p className="mt-1 text-sm text-slate-600">{result.suggestion}</p>
+              {result.source && <p className="mt-3 text-xs text-slate-500">{result.source}</p>}
             </div>
           </div>
         )}
 
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-5">
-          <p className="text-white/40 text-xs uppercase tracking-wider mb-3">Acetone PPM Reference</p>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 sm:p-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Acetone PPM Reference</p>
           <div className="space-y-2">
             {[
-              { label: 'Normal', range: '< 1.8 PPM', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-              { label: 'Pre-Diabetic', range: '1.8 – 3.5 PPM', color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-              { label: 'Diabetic', range: '> 3.5 PPM', color: 'text-red-400', bg: 'bg-red-500/10' },
+              { label: 'Normal', range: '< 1.8 PPM', color: 'text-emerald-700', bg: 'bg-emerald-50' },
+              { label: 'Pre-Diabetic', range: '1.8 – 3.5 PPM', color: 'text-amber-700', bg: 'bg-amber-50' },
+              { label: 'Diabetic', range: '> 3.5 PPM', color: 'text-rose-700', bg: 'bg-rose-50' },
             ].map(r => (
-              <div key={r.label} className={`flex items-center justify-between ${r.bg} rounded-xl px-4 py-2.5`}>
+              <div key={r.label} className={`flex items-center justify-between rounded-xl px-4 py-2.5 ${r.bg}`}>
                 <span className={`text-sm font-medium ${r.color}`}>{r.label}</span>
-                <span className="text-white/40 text-sm font-mono">{r.range}</span>
+                <span className="font-mono text-sm text-slate-500">{r.range}</span>
               </div>
             ))}
           </div>
-          <p className="text-white/20 text-xs text-center mt-4">For health monitoring purposes only. Not for medical diagnosis.</p>
+          <p className="mt-4 text-center text-xs text-slate-400">For health monitoring purposes only. Not for medical diagnosis.</p>
         </div>
       </div>
     </div>

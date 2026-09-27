@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import MetricCard from '../../components/MetricCard';
 
 const RECENT_PREVIEW = 5;
 
@@ -84,23 +85,12 @@ export default function Dashboard() {
 
         <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            { label: 'Total patients', value: stats.total, accent: 'bg-sky-50 text-sky-700', tint: 'from-sky-500 to-cyan-500' },
-            { label: 'Normal band', value: stats.normal, accent: 'bg-emerald-50 text-emerald-700', tint: 'from-emerald-500 to-teal-500' },
-            { label: 'Elevated band', value: stats.preDiabetic, accent: 'bg-amber-50 text-amber-700', tint: 'from-amber-400 to-yellow-500' },
-            { label: 'High band', value: stats.diabetic, accent: 'bg-rose-50 text-rose-700', tint: 'from-rose-500 to-red-500' },
-          ].map((s) => (
-            <div key={s.label} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50">
-              <div className="mb-4 flex items-center justify-between">
-                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${s.tint} text-lg font-semibold text-white`}>
-                  {s.value}
-                </span>
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${s.accent}`}>
-                  Live
-                </span>
-              </div>
-              <p className="text-sm font-medium text-slate-500">{s.label}</p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{s.value}</p>
-            </div>
+            { label: 'Total patients', value: stats.total, status: 'Primary', tone: 'blue', icon: 'patients' },
+            { label: 'Normal band', value: stats.normal, status: 'Normal', tone: 'green', icon: 'normal' },
+            { label: 'Elevated band', value: stats.preDiabetic, status: 'Elevated', tone: 'amber', icon: 'elevated' },
+            { label: 'High band', value: stats.diabetic, status: 'High', tone: 'red', icon: 'high' },
+          ].map((metric) => (
+            <MetricCard key={metric.label} {...metric} live />
           ))}
         </section>
 

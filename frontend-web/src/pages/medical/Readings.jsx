@@ -45,38 +45,39 @@ export default function Readings() {
 
   const patientName = (id) => patients.find(p => p.id === id)?.full_name || `Patient #${id}`;
 
-  if (loading) return <div className="flex-1 flex items-center justify-center bg-slate-950"><div className="text-white/30 text-sm">Loading...</div></div>;
+  if (loading) return <div className="flex-1 flex items-center justify-center bg-slate-100"><div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500 shadow-sm">Loading readings...</div></div>;
 
   return (
-    <div className="flex-1 bg-slate-950 overflow-auto">
-      <div className="p-8 max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Readings History</h1>
-          <p className="text-white/30 text-sm mt-1">{filtered.length} total readings</p>
+    <div className="min-h-full flex-1 overflow-auto bg-slate-100 text-slate-800">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+        <div className="mb-6">
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-600">Monitoring records</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Readings History</h1>
+          <p className="mt-1 text-sm text-slate-500">{filtered.length} total readings</p>
         </div>
 
-        <div className="flex gap-2 mb-6 flex-wrap">
+        <div className="mb-6 flex flex-wrap gap-2">
           <button onClick={() => setSelected('all')}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selected === 'all' ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/40 hover:text-white border border-white/10'}`}>
+            className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${selected === 'all' ? 'bg-sky-600 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-500 hover:border-sky-200 hover:text-sky-700'}`}>
             All Patients
           </button>
           {patients.map(p => (
             <button key={p.id} onClick={() => setSelected(String(p.id))}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selected === String(p.id) ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/40 hover:text-white border border-white/10'}`}>
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition-all ${selected === String(p.id) ? 'bg-sky-600 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-500 hover:border-sky-200 hover:text-sky-700'}`}>
               {p.full_name}
             </button>
           ))}
         </div>
 
         {chartData.length > 1 && (
-          <div className="bg-white/3 border border-white/8 rounded-2xl p-6 mb-6">
-            <h3 className="text-white font-medium text-sm mb-4">Acetone PPM Trend</h3>
+          <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/50 sm:p-6">
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">Acetone PPM Trend</h3>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="time" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} />
-                <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: 'white' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', color: '#0f172a' }} />
                 <ReferenceLine y={1.8} stroke="rgba(234,179,8,0.4)" strokeDasharray="4 4" label={{ value: 'Pre-Diabetic', fill: 'rgba(234,179,8,0.6)', fontSize: 10 }} />
                 <ReferenceLine y={3.5} stroke="rgba(239,68,68,0.4)" strokeDasharray="4 4" label={{ value: 'Diabetic', fill: 'rgba(239,68,68,0.6)', fontSize: 10 }} />
                 <Line type="monotone" dataKey="ppm" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6', r: 3 }} />
@@ -85,38 +86,38 @@ export default function Readings() {
           </div>
         )}
 
-        <div className="bg-white/3 border border-white/8 rounded-2xl overflow-hidden">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm shadow-slate-200/50">
           {filtered.length === 0 ? (
-            <div className="py-20 text-center text-white/20 text-sm">No readings found.</div>
+            <div className="py-20 text-center text-sm text-slate-500">No readings found.</div>
           ) : (
             <>
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/5">
+                  <tr className="border-b border-slate-200 bg-slate-50/80">
                     {['Patient', 'Acetone PPM', 'Est. Glucose', 'Temp', 'Humidity', 'Level', 'Date', ''].map(h => (
-                      <th key={h} className="text-left px-6 py-3 text-white/30 text-xs font-medium uppercase tracking-wider">{h}</th>
+                      <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:px-6">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.map((r) => (
-                    <tr key={r.id} className="border-b border-white/3 hover:bg-white/2 transition-colors">
-                      <td className="px-6 py-3 text-white/70 text-sm">{patientName(r.patient_id)}</td>
-                      <td className="px-6 py-3 text-white font-mono text-sm">{r.acetone_ppm}</td>
-                      <td className="px-6 py-3 text-emerald-400 text-sm font-medium">
+                    <tr key={r.id} className="border-b border-slate-200 last:border-b-0 transition-colors hover:bg-slate-50/70">
+                      <td className="px-5 py-3 text-sm font-medium text-slate-700 sm:px-6">{patientName(r.patient_id)}</td>
+                      <td className="px-5 py-3 font-mono text-sm text-slate-800 sm:px-6">{r.acetone_ppm}</td>
+                      <td className="px-5 py-3 text-sm font-semibold text-slate-800 sm:px-6">
                         {r.estimated_glucose_mg_dl ? `${r.estimated_glucose_mg_dl} mg/dL` : '—'}
-                        {r.glucose_level && <span className="text-white/50 text-xs ml-1">({r.glucose_level})</span>}
+                        {r.glucose_level && <span className="ml-1 text-xs font-medium text-slate-400">({r.glucose_level})</span>}
                       </td>
-                      <td className="px-6 py-3 text-white/50 text-sm">{r.temperature}°C</td>
-                      <td className="px-6 py-3 text-white/50 text-sm">{r.humidity}%</td>
-                      <td className="px-6 py-3">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-lg text-xs font-medium border ${levelBg[r.diabetes_level]} ${levelColor[r.diabetes_level]}`}>
+                      <td className="px-5 py-3 text-sm text-slate-600 sm:px-6">{r.temperature}°C</td>
+                      <td className="px-5 py-3 text-sm text-slate-600 sm:px-6">{r.humidity}%</td>
+                      <td className="px-5 py-3 sm:px-6">
+                        <span className={`inline-flex rounded-lg border px-2.5 py-0.5 text-xs font-medium ${r.diabetes_level === 'Normal' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : r.diabetes_level === 'Pre-Diabetic' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
                           {r.diabetes_level}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-white/30 text-xs">{new Date(r.taken_at).toLocaleString()}</td>
-                      <td className="px-6 py-3">
-                        <button onClick={() => remove(r.id)} className="text-white/20 hover:text-red-400 transition-colors">
+                      <td className="px-5 py-3 text-xs text-slate-500 sm:px-6">{new Date(r.taken_at).toLocaleString()}</td>
+                      <td className="px-5 py-3 sm:px-6">
+                        <button onClick={() => remove(r.id)} className="text-slate-300 transition-colors hover:text-rose-500">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -127,25 +128,25 @@ export default function Readings() {
                 </tbody>
               </table>
               {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
-                  <div className="text-white/40 text-sm">
+                <div className="flex items-center justify-between border-t border-slate-200 px-5 py-4 sm:px-6">
+                  <div className="text-sm text-slate-500">
                     Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} readings
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 text-white/40 hover:text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Previous
                     </button>
-                    <span className="px-3 py-1.5 text-sm text-white/60">
+                    <span className="px-3 py-1.5 text-sm text-slate-500">
                       Page {currentPage} of {totalPages}
                     </span>
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 text-white/40 hover:text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Next
                     </button>

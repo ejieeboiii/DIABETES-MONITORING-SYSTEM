@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLogout } from '../hooks/useLogout';
 
@@ -12,39 +12,50 @@ const links = [
 export default function PatientSidebar() {
   const { user } = useAuth();
   const { handleLogout, loggingOut } = useLogout();
+  const location = useLocation();
 
   return (
-    <aside className="w-64 h-full shrink-0 bg-slate-900 border-r border-white/5 flex flex-col overflow-hidden">
-      <div className="p-6 border-b border-white/5">
+    <aside className="w-full max-w-[280px] shrink-0 border-b border-slate-700 bg-slate-800 shadow-xl shadow-slate-900/10 backdrop-blur-xl lg:h-full lg:border-b-0 lg:border-r">
+      <div className="flex items-center gap-3 border-b border-slate-700 p-6">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-lg">🧑</div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 text-lg font-bold text-white shadow-lg shadow-sky-500/20">
+            <svg viewBox="0 0 48 48" fill="none" className="h-9 w-9" aria-label="BreathDx logo" role="img">
+              <path d="M16 8h12c6 0 10 3.5 10 8.5 0 3.3-1.9 5.8-5.1 7.1 3.7 1.2 5.8 3.9 5.8 7.5C38.7 36.8 34 40 27 40H16V8Z" fill="white" fillOpacity="0.96" />
+              <path d="M23 14v8h6c2.7 0 4.4-1.4 4.4-4s-1.7-4-4.4-4H23ZM23 27v8h4.7c3.2 0 5.1-1.4 5.1-4s-1.9-4-5.1-4H23Z" fill="#1687df" />
+              <path d="M10 23c4.2 4.1 8.3 4.1 12.5 0M10 28c4.2 4.1 8.3 4.1 12.5 0" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M34.5 30.5c0 3-2.2 5.1-4.8 5.1s-4.8-2.1-4.8-5.1c0-2.5 4.8-8.2 4.8-8.2s4.8 5.7 4.8 8.2Z" fill="#1687df" stroke="white" strokeWidth="1.4" />
+              <path d="M29.7 29.4v2.8M28.3 30.8h2.8" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
+            </svg>
+          </div>
           <div>
-            <p className="text-white font-bold text-sm">BreathDx</p>
-            <p className="text-emerald-400/60 text-xs">Patient Portal</p>
+            <p className="text-lg font-bold tracking-tight text-white">BreathDx</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-sky-300">Patient Portal</p>
           </div>
         </div>
       </div>
-      <nav className="flex-1 p-4 space-y-1 overflow-hidden">
+      <nav className="flex flex-wrap gap-2 overflow-hidden p-4 lg:flex-col lg:flex-nowrap">
         {links.map((link) => (
           <NavLink key={link.to} to={link.to}
-            className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'text-white/40 hover:text-white hover:bg-white/5'}`}>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">{link.icon}</svg>
+            className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${isActive ? 'bg-sky-400/15 text-sky-200 shadow-sm ring-1 ring-sky-300/20' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
+            <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${location.pathname === link.to ? 'bg-sky-400/20 text-sky-200' : 'bg-slate-700 text-slate-400'}`}>
+              <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">{link.icon}</svg>
+            </span>
             {link.label}
           </NavLink>
         ))}
       </nav>
-      <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-sm">{user?.full_name?.[0]}</div>
+      <div className="border-t border-slate-700 p-4 lg:mt-auto">
+        <div className="flex items-center gap-3 rounded-2xl bg-slate-700 p-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-100 text-sm font-bold text-sky-700">{user?.full_name?.[0]}</div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-medium truncate">{user?.full_name}</p>
-            <p className="text-white/30 text-xs truncate">Patient</p>
+            <p className="truncate text-sm font-semibold text-slate-100">{user?.full_name}</p>
+            <p className="truncate text-xs text-slate-300">Patient</p>
           </div>
           <button
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="text-white/20 hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="rounded-lg p-1 text-slate-300 transition-colors hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={loggingOut ? 'Signing out' : 'Logout'}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

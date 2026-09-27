@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 /** In dev, Vite proxies /readings and /auth to the backend (see vite.config.js). */
-const API_BASE = import.meta.env.DEV ? '' : 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.DEV ? '' : 'http://127.0.0.1:8001';
 
 const API = axios.create({
   baseURL: API_BASE,
@@ -9,7 +9,7 @@ const API = axios.create({
 
 export const API_BASE_URL = import.meta.env.DEV
   ? `${window.location.protocol}//${window.location.host}`
-  : 'http://127.0.0.1:8000';
+  : 'http://127.0.0.1:8001';
 
 const getWebSocketBase = () => {
   if (import.meta.env.DEV) {

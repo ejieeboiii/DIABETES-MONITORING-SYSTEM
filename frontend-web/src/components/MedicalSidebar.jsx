@@ -44,14 +44,25 @@ export default function MedicalSidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-full max-w-[280px] shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.05)] lg:h-full lg:border-b-0 lg:border-r">
-      <div className="flex items-center gap-3 border-b border-slate-200 p-6">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-lg font-bold text-white shadow-lg shadow-sky-500/20">
-          B
+    <aside className="w-full max-w-[280px] shrink-0 border-b border-slate-700 bg-slate-800 shadow-xl shadow-slate-900/10 backdrop-blur-xl lg:h-full lg:border-b-0 lg:border-r">
+      <div className="flex items-center gap-3 border-b border-slate-700 p-6">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 shadow-lg shadow-sky-500/20">
+          <svg viewBox="0 0 48 48" fill="none" className="h-9 w-9" aria-label="BreathDx logo" role="img">
+            <path
+              d="M16 8h12c6 0 10 3.5 10 8.5 0 3.3-1.9 5.8-5.1 7.1 3.7 1.2 5.8 3.9 5.8 7.5C38.7 36.8 34 40 27 40H16V8Z"
+              fill="white"
+              fillOpacity="0.96"
+            />
+            <path d="M23 14v8h6c2.7 0 4.4-1.4 4.4-4s-1.7-4-4.4-4H23Z" fill="#1687df" />
+            <path d="M23 27v8h4.7c3.2 0 5.1-1.4 5.1-4s-1.9-4-5.1-4H23Z" fill="#1687df" />
+            <path d="M10 23c4.2 4.1 8.3 4.1 12.5 0M10 28c4.2 4.1 8.3 4.1 12.5 0" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M34.5 30.5c0 3-2.2 5.1-4.8 5.1s-4.8-2.1-4.8-5.1c0-2.5 4.8-8.2 4.8-8.2s4.8 5.7 4.8 8.2Z" fill="#1687df" stroke="white" strokeWidth="1.4" />
+            <path d="M29.7 29.4v2.8M28.3 30.8h2.8" stroke="white" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
         </div>
         <div>
-          <p className="text-lg font-bold tracking-tight text-slate-900">BreathDx</p>
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">Provider</p>
+          <p className="text-lg font-bold tracking-tight text-white">BreathDx</p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-400">Provider</p>
         </div>
       </div>
 
@@ -63,14 +74,14 @@ export default function MedicalSidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? 'bg-sky-50 text-sky-700 shadow-sm ring-1 ring-sky-100'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-sky-400/15 text-sky-200 shadow-sm ring-1 ring-sky-300/20'
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`
             }
           >
             <span
               className={`flex h-8 w-8 items-center justify-center rounded-xl ${
-                location.pathname === link.to ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-500'
+                location.pathname === link.to ? 'bg-sky-400/20 text-sky-200' : 'bg-slate-700 text-slate-400'
               }`}
             >
               {link.icon}
@@ -80,18 +91,18 @@ export default function MedicalSidebar() {
         ))}
       </nav>
 
-      <div className="p-4 lg:mt-auto lg:border-t lg:border-slate-200">
-        <div className="rounded-2xl bg-slate-100 p-3">
+      <div className="p-4 lg:mt-auto lg:border-t lg:border-slate-700">
+        <div className="rounded-2xl bg-slate-700 p-3">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-800">{user?.full_name || 'Provider'}</p>
-              <p className="text-xs text-slate-500">Healthcare provider</p>
+              <p className="truncate text-sm font-semibold text-slate-100">{user?.full_name || 'Provider'}</p>
+              <p className="text-xs text-slate-300">Healthcare provider</p>
             </div>
             <button
               type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-600 transition-colors hover:border-red-200 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-xl border border-slate-500 bg-slate-800 px-2.5 py-1.5 text-[11px] font-medium text-slate-200 transition-colors hover:border-rose-300 hover:text-rose-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loggingOut ? 'Signing out…' : 'Logout'}
             </button>
