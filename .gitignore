@@ -13,3 +13,8 @@
 # Private experimental datasets, profiles and generated TGS artifacts.
 /backend/ml/private/
 /backend/calibration/private/
+/frontend-mobile/.env
+/frontend-mobile/.env.*
+!/frontend-mobile/.env.example
+/frontend-mobile/.expo-check*/
+/frontend-mobile/.expo-export-test*/
