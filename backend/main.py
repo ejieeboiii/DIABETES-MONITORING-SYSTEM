@@ -11,10 +11,28 @@ from routes_auth import router as auth_router
 from routes_patients import router as patients_router
 
 from routes_readings import router as readings_router
+from settings import get_allowed_origins
+from fastapi.exceptions import RequestValidationError
+from error_handlers import request_validation_error
+from migrate_sensor_configuration import require_sensor_schema
+from migrate_scan_workflow import require_scan_schema
+from migrate_simulation import require_simulation_schema
+from migrate_preprocessing import require_preprocessing_schema
+from sqlalchemy import inspect
 
 
 
+if inspect(engine).has_table("readings"):
+    # Existing installations must be backed up/migrated explicitly, before DDL.
+    require_sensor_schema(engine)
+    require_scan_schema(engine)
+    require_simulation_schema(engine)
+    require_preprocessing_schema(engine)
 models.Base.metadata.create_all(bind=engine)
+require_sensor_schema(engine)
+require_scan_schema(engine)
+require_simulation_schema(engine)
+require_preprocessing_schema(engine)
 
 
 
@@ -34,7 +52,7 @@ app.add_middleware(
 
     CORSMiddleware,
 
-    allow_origins=["*"],
+    allow_origins=get_allowed_origins(),
 
     allow_credentials=True,
 
@@ -43,6 +61,7 @@ app.add_middleware(
     allow_headers=["*"],
 
 )
+app.add_exception_handler(RequestValidationError, request_validation_error)
 
 
 

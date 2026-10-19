@@ -1,25 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getPatients, getAllReadings } from '../../utils/api';
+import useProviderData from '../../hooks/useProviderData';
+import RequestError from '../../components/RequestError';
 import MetricCard from '../../components/MetricCard';
 import TrendChart from '../../components/TrendChart';
 import { filterByDays, toChartData } from '../../utils/monitoring';
 
 export default function Trends() {
-  const [patients, setPatients] = useState([]);
-  const [readings, setReadings] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState('all');
-  const [range, setRange] = useState(30);
-  const [loading, setLoading] = useState(true);
+  const { patients, readings, loading, error, load } = useProviderData();
   const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    const pid = searchParams.get('patient');
-    if (pid) setSelectedPatient(pid);
-    Promise.all([getPatients(), getAllReadings()])
-      .then(([p, r]) => { setPatients(p.data); setReadings(r.data); })
-      .finally(() => setLoading(false));
-  }, [searchParams]);
+  const [selectedPatient, setSelectedPatient] = useState(() => searchParams.get('patient') || 'all');
+  const [range, setRange] = useState(30);
+  if (error) return <RequestError message={error} onRetry={load} />;
 
   const filteredReadings = selectedPatient === 'all'
     ? readings
@@ -48,7 +40,7 @@ export default function Trends() {
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-sky-600">Analytics workspace</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Clinic Trends</h1>
-          <p className="mt-1 text-sm text-slate-500">Population and per-patient acetone monitoring trends</p>
+          <p className="mt-1 text-sm text-slate-500">Historical concentration trends. Uncalibrated TGS readings are available in Readings History and excluded from PPM trends.</p>
         </div>
 
         <div className="flex flex-wrap gap-2">

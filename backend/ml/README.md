@@ -1,5 +1,26 @@
 # Linear Regression: Acetone → Blood Glucose (Capstone ML Module)
 
+## Step 4 TGS pipeline
+
+The current sensor-specific entry point is `train_tgs_regression.py`, run as
+`python -m ml.train_tgs_regression` from `backend`. It consumes de-identified,
+paired **physical experimental** ADC/environment/baseline observations with a
+reviewed dataset manifest and sensor profile. It exports versioned, hash-pinned
+JSON coefficients, participant-group holdout metrics, training-only scaling,
+feature units and provenance. It does not consume simulations or convert gas
+counts into acetone concentrations. No dataset has been supplied or trained.
+
+See [Step 4 details and local checks](../../STEP4_PREPROCESSING_ESTIMATION_REPORT.md).
+The older PPM utilities below are retained for compatibility; their artifacts
+are not interchangeable with the TGS JSON artifact. Legacy runtime inference
+also requires explicitly configured, hash-bound evaluation evidence now.
+
+**Sensor compatibility:** these utilities require concentration features, not
+raw TGS ADC counts. The current dual TGS acquisition stores raw readings with
+unverified calibration and does not invoke these models. Existing MQ-era model
+artifacts/datasets are retained; no TGS calibration or retraining is implied.
+See [the current sensor configuration](../SENSOR_CONFIGURATION.md).
+
 This folder supports the objective:
 
 > Apply a Linear Regression algorithm to estimate blood glucose levels from acetone data using collected datasets.

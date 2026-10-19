@@ -1,5 +1,10 @@
 # MQ-138 real breath testing guide
 
+**Archived legacy guide:** MQ-138 is superseded by separate TGS822 and TGS2620
+inputs. Do not apply this guide's pins, conversion constants or breath thresholds
+to those sensors. Historical MQ-138 records are preserved. See
+[the current dual-sensor setup](../backend/SENSOR_CONFIGURATION.md).
+
 ## Hardware
 
 | Part | Connection |

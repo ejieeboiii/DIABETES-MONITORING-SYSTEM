@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MetricCard from '../../components/MetricCard';
 
 const RECENT_PREVIEW = 5;
 
-import { getPatients, getAllReadings } from '../../utils/api';
+import useProviderData from '../../hooks/useProviderData';
+import RequestError from '../../components/RequestError';
 import { useAuth } from '../../context/AuthContext';
 import LevelBadge from '../../components/LevelBadge';
 import { getProviderAlerts } from '../../utils/monitoring';
@@ -18,26 +19,17 @@ const navButtons = [
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const [patients, setPatients] = useState([]);
-  const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { patients, readings, loading, error, load } = useProviderData();
   const [showAllRecent, setShowAllRecent] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    Promise.all([getPatients(), getAllReadings()])
-      .then(([p, r]) => {
-        setPatients(p.data);
-        setReadings(r.data);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  if (error) return <RequestError message={error} onRetry={load} />;
 
   const stats = {
     total: patients.length,
-    normal: readings.filter((r) => r.diabetes_level === 'Normal').length,
-    preDiabetic: readings.filter((r) => r.diabetes_level === 'Pre-Diabetic').length,
-    diabetic: readings.filter((r) => r.diabetes_level === 'Diabetic').length,
+    normal: readings.filter((r) => !r.is_simulated && r.diabetes_level === 'Normal').length,
+    preDiabetic: readings.filter((r) => !r.is_simulated && r.diabetes_level === 'Pre-Diabetic').length,
+    diabetic: readings.filter((r) => !r.is_simulated && r.diabetes_level === 'Diabetic').length,
   };
 
   const alerts = getProviderAlerts(patients, readings);
@@ -105,7 +97,7 @@ export default function Dashboard() {
               </div>
 
               {alerts.length === 0 ? (
-                <div className="px-6 py-12 text-center text-sm text-slate-500">No alerts right now. All patients look stable.</div>
+                <div className="px-6 py-12 text-center text-sm text-slate-500">No monitoring alerts from available real readings.</div>
               ) : (
                 <div className="divide-y divide-slate-200">
                   {alerts.map((alert, i) => (
@@ -161,10 +153,13 @@ export default function Dashboard() {
                         {displayedRecent.map((r) => (
                           <tr key={r.id} className="border-b border-slate-200 last:border-b-0 hover:bg-slate-50/70">
                             <td className="px-5 py-3 text-sm font-medium text-slate-700 sm:px-6">{patientName(r.patient_id)}</td>
-                            <td className="px-5 py-3 font-mono text-sm text-slate-800 sm:px-6">{r.acetone_ppm} ppm</td>
+                            <td className="px-5 py-3 font-mono text-sm text-slate-800 sm:px-6">
+                              {r.is_simulated && <p className="mb-1 text-xs font-semibold text-sky-700">SIMULATED — synthetic test data</p>}
+                              {r.acetone_ppm == null ? 'Calibration unverified' : `${r.acetone_ppm} ppm`}
+                              {r.sensor_configuration === 'tgs822_tgs2620' && <p className="mt-1 text-xs text-slate-500">TGS822: {r.tgs822_raw_adc} ADC · TGS2620: {r.tgs2620_raw_adc} ADC</p>}
+                            </td>
                             <td className="px-5 py-3 text-sm font-semibold text-slate-800 sm:px-6">
-                              {r.estimated_glucose_mg_dl ? `${r.estimated_glucose_mg_dl} mg/dL` : '—'}
-                              {r.glucose_level && <span className="ml-1 text-xs font-medium text-slate-400">({r.glucose_level})</span>}
+                              {r.predicted_bgl != null ? `${r.predicted_bgl} mg/dL (experimental)` : 'Unavailable'}
                             </td>
                             <td className="px-5 py-3 text-sm text-slate-600 sm:px-6">{r.temperature}°C</td>
                             <td className="px-5 py-3 text-sm text-slate-600 sm:px-6">{r.humidity}%</td>

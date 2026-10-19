@@ -1,0 +1,15 @@
+# Backend secrets must remain local.
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+/iot-prototype/esp32/esp32_breathdx/device_secrets.h
+/iot-prototype/esp32/esp32_breathdx/sensor_config.h
+/frontend-web/.env
+/frontend-web/.env.*
+!/frontend-web/.env.example
+/backend/backups/
+/output/
+/backend/tests/__pycache__/
+# Private experimental datasets, profiles and generated TGS artifacts.
+/backend/ml/private/
+/backend/calibration/private/

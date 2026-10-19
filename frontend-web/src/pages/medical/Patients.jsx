@@ -1,20 +1,19 @@
-import { useEffect, useState } from 'react';
-import { getPatients, addPatient, deletePatient } from '../../utils/api';
+import { useState } from 'react';
+import { addPatient, deletePatient } from '../../utils/api';
+import useProviderData from '../../hooks/useProviderData';
+import RequestError from '../../components/RequestError';
+import { apiErrorMessage } from '../../utils/errors';
 import PatientDetailModal from '../../components/PatientDetailModal';
 import PatientCredentialsBanner from '../../components/PatientCredentialsBanner';
 
 export default function Patients() {
-  const [patients, setPatients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { patients, loading, error: loadError, load } = useProviderData();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', password: '', age: '', gender: 'Male', contact: '', is_diabetic: 'Unknown' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [newAccountCredentials, setNewAccountCredentials] = useState(null);
-
-  const load = () => getPatients().then((r) => setPatients(r.data)).finally(() => setLoading(false));
-  useEffect(() => { load(); }, []);
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -31,7 +30,7 @@ export default function Patients() {
       setShowForm(false);
       load();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to add patient.');
+      setError(apiErrorMessage(err, 'Failed to add patient.'));
     } finally {
       setSubmitting(false);
     }
@@ -40,10 +39,14 @@ export default function Patients() {
   const remove = async (e, id, name) => {
     e.stopPropagation();
     if (!confirm(`Delete patient "${name}"?`)) return;
-    await deletePatient(id);
-    if (selectedPatient?.id === id) setSelectedPatient(null);
-    load();
+    setError('');
+    try {
+      await deletePatient(id);
+      if (selectedPatient?.id === id) setSelectedPatient(null);
+      await load();
+    } catch (err) { setError(apiErrorMessage(err, 'Failed to delete patient.')); }
   };
+  if (loadError) return <RequestError message={loadError} onRetry={load} />;
 
   if (loading) return <div className="flex-1 flex items-center justify-center bg-slate-100"><div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500 shadow-sm">Loading patients...</div></div>;
 
@@ -62,6 +65,7 @@ export default function Patients() {
           </button>
         </div>
 
+        {error && !showForm && <RequestError message={error} />}
         {newAccountCredentials && (
           <PatientCredentialsBanner
             email={newAccountCredentials.email}
@@ -85,21 +89,23 @@ export default function Patients() {
               ].map((f) => (
                 <div key={f.name}>
                   <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{f.label}</label>
-                  <input name={f.name} type={f.type} placeholder={f.placeholder} value={form[f.name]} onChange={handle}
+                  <input aria-label={f.label} name={f.name} type={f.type} placeholder={f.placeholder} value={form[f.name]} onChange={handle}
+                    min={f.name === 'age' ? 0 : undefined} max={f.name === 'age' ? 130 : undefined} step={f.name === 'age' ? 1 : undefined}
+                    minLength={f.name === 'password' ? 8 : undefined} maxLength={f.name === 'password' ? 72 : undefined}
                     required={f.name !== 'contact'}
                     className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />
                 </div>
               ))}
               <div>
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Gender</label>
-                <select name="gender" value={form.gender} onChange={handle}
+                <select aria-label="Gender" name="gender" value={form.gender} onChange={handle}
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                   <option>Male</option><option>Female</option><option>Other</option>
                 </select>
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Diabetes Status</label>
-                <select name="is_diabetic" value={form.is_diabetic} onChange={handle}
+                <select aria-label="Reported diabetes status" name="is_diabetic" value={form.is_diabetic} onChange={handle}
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
                   <option>Unknown</option><option>Diabetic</option><option>Non-Diabetic</option>
                 </select>
@@ -124,12 +130,11 @@ export default function Patients() {
         ) : (
           <div className="grid gap-3">
             {patients.map((p) => (
-              <button
+              <div
                 key={p.id}
-                type="button"
-                onClick={() => setSelectedPatient(p)}
                 className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left shadow-sm transition-colors hover:border-sky-200 hover:bg-sky-50/40 sm:px-6"
               >
+                <button type="button" onClick={() => setSelectedPatient(p)} className="flex-1 text-left">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 font-bold text-sky-700">
                     {p.full_name[0]}
@@ -140,19 +145,18 @@ export default function Patients() {
                     <p className="text-xs text-slate-400">{p.email}{p.contact ? ` • ${p.contact}` : ''}</p>
                   </div>
                 </div>
-                <span
-                  role="button"
-                  tabIndex={0}
+                </button>
+                <button
+                  type="button"
                   onClick={(e) => remove(e, p.id, p.full_name)}
-                  onKeyDown={(e) => e.key === 'Enter' && remove(e, p.id, p.full_name)}
-                  className="rounded-lg p-1.5 text-slate-300 transition-colors hover:text-rose-500"
+                  className="rounded-lg p-2 text-slate-500 transition-colors hover:text-rose-500"
                   aria-label="Delete patient"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                </span>
-              </button>
+                </button>
+              </div>
             ))}
           </div>
         )}
@@ -160,8 +164,10 @@ export default function Patients() {
 
       {selectedPatient && (
         <PatientDetailModal
+          key={selectedPatient.id}
           patient={selectedPatient}
           onClose={() => setSelectedPatient(null)}
+          onPatientUpdated={(patient) => { setSelectedPatient(patient); load(); }}
         />
       )}
     </div>

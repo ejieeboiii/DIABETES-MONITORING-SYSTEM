@@ -1,0 +1,30 @@
+#pragma once
+
+// Copy to sensor_config.h. Replace -1 with pins verified for your exact ESP32
+// board and analog circuit; both gas inputs must be separate ADC channels.
+// Verify voltage protection, power/heater wiring and WiFi ADC compatibility.
+#define TGS822_PIN -1
+#define TGS2620_PIN -1
+#define DHT_PIN -1
+#define BREATHDX_SENSOR_WIRING_CONFIRMED 0
+// Supply a warmup time supported by your hardware acquisition protocol.
+// Zero disables acquisition. Setting a time does not establish calibration.
+#define BREATHDX_SENSOR_WARMUP_MS 0UL
+
+// Experiment-specific signal detection settings, not calibration/medical values.
+// Zero keeps acquisition disabled. Determine each channel polarity empirically.
+#define BREATHDX_DETECTION_PROTOCOL_CONFIGURED 0
+#define BREATHDX_TGS822_DELTA_ADC 0
+#define BREATHDX_TGS2620_DELTA_ADC 0
+#define BREATHDX_BASELINE_MAX_SPAN_ADC 0
+#define BREATHDX_TGS822_DIRECTION 1
+#define BREATHDX_TGS2620_DIRECTION 1
+#define BREATHDX_REQUIRE_BOTH_CHANNELS 1 // AND; 0 = OR
+#define BREATHDX_ADC_ATTENUATION ADC_0db // placeholder, verify board/circuit range
+// Optional software defaults; not a validated sampling protocol.
+#define BREATHDX_BASELINE_SAMPLES 32
+#define BREATHDX_CAPTURE_SAMPLES 64
+#define BREATHDX_SAMPLE_INTERVAL_MS 20UL
+#define BREATHDX_BREATH_CONFIRM_SAMPLES 3
+#define BREATHDX_BREATH_TIMEOUT_MS 60000UL
+#define BREATHDX_CAPTURE_MAX_SPAN_ADC 4093 // bounds only; choose quality limit

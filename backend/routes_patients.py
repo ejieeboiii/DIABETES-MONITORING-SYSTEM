@@ -6,8 +6,9 @@ from typing import List
 from database import get_db
 from auth import get_current_medical, get_current_patient, hash_password
 import models, schemas
+from routes_auth import save_account_change, AccountDatabaseErrorRoute
 
-router = APIRouter()
+router = APIRouter(route_class=AccountDatabaseErrorRoute)
 
 # ─── ADD PATIENT (Medical only) ───────────────────────────────────────────────
 @router.post("/", response_model=schemas.PatientResponse)
@@ -29,7 +30,7 @@ def add_patient(
         medical_personnel_id=current.id
     )
     db.add(patient)
-    db.commit()
+    save_account_change(db)
     db.refresh(patient)
     return patient
 
@@ -55,6 +56,21 @@ def get_patient(
         raise HTTPException(status_code=404, detail="Patient not found.")
     return patient
 
+
+@router.patch("/{patient_id}", response_model=schemas.PatientResponse)
+def update_patient_details(patient_id: int, data: schemas.PatientDetailsUpdate,
+                            db: Session = Depends(get_db), current=Depends(get_current_medical)):
+    patient = db.query(models.Patient).filter(
+        models.Patient.id == patient_id,
+        models.Patient.medical_personnel_id == current.id,
+    ).first()
+    if patient is None:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+    for name, value in data.model_dump().items():
+        setattr(patient, name, value)
+    save_account_change(db)
+    return patient
+
 def _generate_temp_password(length: int = 10) -> str:
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for _ in range(length))
@@ -75,13 +91,13 @@ def reset_patient_password(
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
 
-    raw = (data.new_password or "").strip()
+    raw = data.new_password or ""
     new_password = raw if raw else _generate_temp_password()
-    if len(new_password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+    if len(new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters.")
 
     patient.hashed_password = hash_password(new_password)
-    db.commit()
+    save_account_change(db)
 
     return schemas.PatientCredentialsOnce(
         email=patient.email,
@@ -103,8 +119,14 @@ def delete_patient(
     ).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
+    if (db.query(models.Reading.id).filter(models.Reading.patient_id == patient.id).first()
+            or db.query(models.ScanSession.id).filter(models.ScanSession.patient_id == patient.id).first()):
+        raise HTTPException(
+            status_code=409,
+            detail="Patient has readings or scan history and cannot be deleted. Preserve their acquisition history.",
+        )
     db.delete(patient)
-    db.commit()
+    save_account_change(db)
     return {"message": f"Patient '{patient.full_name}' deleted successfully."}
 
 # ─── GET OWN PROFILE (Patient only) ──────────────────────────────────────────

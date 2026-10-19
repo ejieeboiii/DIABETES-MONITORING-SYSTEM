@@ -1,30 +1,61 @@
+// API timestamps are UTC; legacy naive timestamps are interpreted as UTC too.
+export function readingTime(value) {
+  if (typeof value !== 'string' || !value) return NaN;
+  const explicit = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+  return new Date(explicit ? value : `${value}Z`).getTime();
+}
+
+function validReadings(readings) {
+  return (Array.isArray(readings) ? readings : []).filter((r) =>
+    !r.is_simulated && Number.isFinite(r.acetone_ppm) && r.acetone_ppm >= 0 && Number.isFinite(readingTime(r.taken_at)));
+}
+
 export const LEVEL_LABELS = {
+  unavailable: 'Calibration unverified',
   Normal: 'Normal monitoring band',
   'Pre-Diabetic': 'Elevated monitoring band',
   Diabetic: 'High monitoring band',
 };
 
+export function sensorLabel(reading) {
+  return `${reading.is_simulated ? 'SIMULATED · ' : ''}${reading.sensor_configuration === 'tgs822_tgs2620' ? 'TGS822 + TGS2620' : 'Legacy MQ-138'}`;
+}
+
+export function rawSensorSummary(reading) {
+  return reading.sensor_configuration === 'tgs822_tgs2620'
+    ? `${reading.is_simulated ? 'SIMULATED · ' : ''}TGS822: ${reading.tgs822_raw_adc ?? '—'} ADC · TGS2620: ${reading.tgs2620_raw_adc ?? '—'} ADC`
+    : `Legacy MQ-138: ${reading.raw_sensor_value ?? '—'} ADC`;
+}
+
+export function concentrationLabel(reading) {
+  return Number.isFinite(reading.acetone_ppm) ? `${reading.acetone_ppm} ppm` : 'Unavailable';
+}
+
 export const levelColor = {
+  unavailable: 'text-slate-500',
   Normal: 'text-emerald-400',
   'Pre-Diabetic': 'text-yellow-400',
   Diabetic: 'text-red-400',
 };
 
 export const levelBg = {
+  unavailable: 'bg-slate-100 border-slate-200',
   Normal: 'bg-emerald-500/10 border-emerald-500/20',
   'Pre-Diabetic': 'bg-yellow-500/10 border-yellow-500/20',
   Diabetic: 'bg-red-500/10 border-red-500/20',
 };
 
 export function filterByDays(readings, days) {
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  return readings.filter((r) => new Date(r.taken_at).getTime() >= cutoff);
+  const now = Date.now();
+  const cutoff = now - days * 24 * 60 * 60 * 1000;
+  return validReadings(readings).filter((r) => readingTime(r.taken_at) >= cutoff && readingTime(r.taken_at) <= now);
 }
 
 export function computeTrend(readings) {
-  if (!readings || readings.length < 2) return { label: 'Insufficient data', direction: 'stable', delta: 0 };
+  readings = validReadings(readings);
+  if (readings.length < 2) return { label: 'Insufficient data', direction: 'stable', delta: 0 };
 
-  const sorted = [...readings].sort((a, b) => new Date(a.taken_at) - new Date(b.taken_at));
+  const sorted = [...readings].sort((a, b) => readingTime(a.taken_at) - readingTime(b.taken_at));
   const recent = sorted.slice(-Math.min(7, sorted.length));
   const firstHalf = recent.slice(0, Math.ceil(recent.length / 2));
   const secondHalf = recent.slice(Math.ceil(recent.length / 2));
@@ -44,17 +75,18 @@ export function computeSevenDayAvg(readings) {
 }
 
 export function toChartData(readings, limit = 30) {
-  return [...readings]
-    .sort((a, b) => new Date(a.taken_at) - new Date(b.taken_at))
+  return [...validReadings(readings)]
+    .sort((a, b) => readingTime(a.taken_at) - readingTime(b.taken_at))
     .slice(-limit)
     .map((r) => ({
-      date: new Date(r.taken_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      date: new Date(readingTime(r.taken_at)).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
       ppm: r.acetone_ppm,
       level: r.diabetes_level,
     }));
 }
 
 export function getWellnessTips(latestLevel, trendDirection) {
+  if (!LEVEL_LABELS[latestLevel] || latestLevel === 'unavailable') return [];
   const base = {
     Normal: [
       { title: 'Stay consistent', text: 'Keep balanced meals, regular activity, and periodic breath monitoring.' },
@@ -92,22 +124,22 @@ export function getProviderAlerts(patients, readings) {
   const now = Date.now();
 
   patients.forEach((patient) => {
-    const patientReadings = readings
+    const patientReadings = readings.filter((r) => !r.is_simulated && Number.isFinite(readingTime(r.taken_at)))
       .filter((r) => r.patient_id === patient.id)
-      .sort((a, b) => new Date(b.taken_at) - new Date(a.taken_at));
+      .sort((a, b) => readingTime(b.taken_at) - readingTime(a.taken_at));
 
     if (!patientReadings.length) {
       alerts.push({
         patientId: patient.id,
         patientName: patient.full_name,
         type: 'no_data',
-        message: 'No readings recorded yet',
+        message: 'No real sensor readings recorded yet',
       });
       return;
     }
 
     const latest = patientReadings[0];
-    const daysSince = (now - new Date(latest.taken_at).getTime()) / (1000 * 60 * 60 * 24);
+    const daysSince = (now - readingTime(latest.taken_at)) / (1000 * 60 * 60 * 24);
 
     if (daysSince >= 7) {
       alerts.push({
@@ -124,11 +156,14 @@ export function getProviderAlerts(patients, readings) {
         patientId: patient.id,
         patientName: patient.full_name,
         type: 'rising',
-        message: 'Readings trending upward over the last week',
+        message: 'Readings trending upward across the latest up to seven readings',
       });
     }
 
-    if (latest.diabetes_level !== 'Normal') {
+    if (!latest.diabetes_level) {
+      alerts.push({ patientId: patient.id, patientName: patient.full_name,
+        type: 'calibration', message: 'Latest raw sensor reading: calibration unverified' });
+    } else if (latest.diabetes_level !== 'Normal') {
       alerts.push({
         patientId: patient.id,
         patientName: patient.full_name,

@@ -1,0 +1,23 @@
+{
+  "profile_id": "UNVERIFIED-REPLACE-BEFORE-USE",
+  "calibration_version": "UNVERIFIED-REPLACE-BEFORE-USE",
+  "preprocessing_version": "tgs-adc-v1",
+  "adc_resolution_bits": 12,
+  "measurement_units": "raw_adc_counts",
+  "acquisition_protocol_reference": "REPLACE with documented acquisition protocol",
+  "evidence_reference": null,
+  "temperature_domain_c": [-40, 80],
+  "humidity_domain_percent": [0, 100],
+  "tgs822": {
+    "sensor_type": "TGS822",
+    "sensor_identifier": "REPLACE-WITH-TGS822-SERIAL",
+    "baseline_adc": null,
+    "environmental_correction": null
+  },
+  "tgs2620": {
+    "sensor_type": "TGS2620",
+    "sensor_identifier": "REPLACE-WITH-TGS2620-SERIAL",
+    "baseline_adc": null,
+    "environmental_correction": null
+  }
+}

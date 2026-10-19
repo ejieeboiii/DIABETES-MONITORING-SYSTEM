@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLogout } from '../hooks/useLogout';
 
 const links = [
+  { to: '/medical/account', label: 'My account', icon: <span aria-hidden="true">◉</span> },
   { to: '/medical/dashboard', label: 'Dashboard', icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
         <path d="M3 11.5 12 4l9 7.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -44,7 +45,7 @@ export default function MedicalSidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-full max-w-[280px] shrink-0 border-b border-slate-700 bg-slate-800 shadow-xl shadow-slate-900/10 backdrop-blur-xl lg:h-full lg:border-b-0 lg:border-r">
+    <aside className="w-full shrink-0 border-b border-slate-700 bg-slate-800 shadow-xl shadow-slate-900/10 backdrop-blur-xl lg:h-full lg:max-w-[280px] lg:border-b-0 lg:border-r">
       <div className="flex items-center gap-3 border-b border-slate-700 p-6">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 shadow-lg shadow-sky-500/20">
           <svg viewBox="0 0 48 48" fill="none" className="h-9 w-9" aria-label="BreathDx logo" role="img">
