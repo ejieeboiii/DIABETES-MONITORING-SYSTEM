@@ -1,4 +1,9 @@
 # Backend secrets must remain local.
+# Generated Python caches and local SQLite data.
+__pycache__/
+*.py[cod]
+/backend/*.db
+/backend/*.db-*
 /backend/.env
 /backend/.env.*
 !/backend/.env.example
